@@ -6,6 +6,7 @@ from cryptography.fernet import Fernet
 
 class PasswordManager:
     def __init__(self, db_name="passwords.db", key_file="encryption.key"):
+        """Initialize the password manager with database and encryption"""
         self.db_name = db_name
         self.key_file = key_file
         self.conn = sqlite3.connect(db_name)
@@ -14,6 +15,7 @@ class PasswordManager:
         self.create_table()
     
     def create_table(self):
+        """Create the passwords table if it doesn't exist"""
         self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS passwords (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,6 +26,7 @@ class PasswordManager:
         self.conn.commit()
    
     def _initialize_encryption(self):
+        """Load or generate encryption key"""
         if os.path.exists(self.key_file):
             with open(self.key_file, 'rb') as f:
                 key = f.read()
@@ -34,12 +37,15 @@ class PasswordManager:
         return Fernet(key)
     
     def encrypt_password(self, password):
+        """Encrypt a password using Fernet"""
         return self.fernet.encrypt(password.encode()).decode()
     
     def decrypt_password(self, encrypted_password):
+        """Decrypt an encrypted password"""
         return self.fernet.decrypt(encrypted_password.encode()).decode()
     
     def validate_password(self, password):
+        """Check if password meets security requirements"""
         errors = []
         
         if len(password) < 8:
@@ -60,6 +66,7 @@ class PasswordManager:
         return len(errors) == 0, errors
     
     def add_password(self, service_name):
+        """Add a new password for a service with validation and confirmation"""
         max_attempts = 3
         
         for attempt in range(1, max_attempts + 1):
@@ -106,7 +113,8 @@ class PasswordManager:
                 print(f"Error saving password: {e}")
                 return
     
-    def get_password(self, service_name):   
+    def get_password(self, service_name):
+        """Retrieve and decrypt a password for a service"""
         try:
             self.cursor.execute("SELECT service, password FROM passwords WHERE service = ?", (service_name,))
             result = self.cursor.fetchone()
@@ -125,9 +133,11 @@ class PasswordManager:
             return None
     
     def close(self):
+        """Close the database connection"""
         self.conn.close()
 
 def main():
+    """Run the password manager CLI."""
     pm = PasswordManager()
     
     while True:
