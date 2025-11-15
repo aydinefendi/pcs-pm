@@ -24,7 +24,7 @@ class PasswordManager:
             )
         ''')
         self.conn.commit()
-   
+
     def _initialize_encryption(self):
         """Load or generate encryption key"""
         if os.path.exists(self.key_file):

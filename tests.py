@@ -19,7 +19,7 @@ class TestPasswordManager(unittest.TestCase):
         if os.path.exists(self.test_key):
             os.remove(self.test_key)
         os.rmdir(self.temp_dir)
-    
+  
     def test_password_validation_valid(self):
         valid_password = "MyPass123!"
         is_valid, errors = self.pm.validate_password(valid_password)

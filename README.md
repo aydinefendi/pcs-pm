@@ -155,7 +155,6 @@ Potential improvements for future versions:
 - Update/delete password functionality
 - Password strength meter
 - Export/import functionality
-- Password generation tool
 - Search and list all services
 - Clipboard integration (auto-clear after timeout)
 - Cross-platform support testing
