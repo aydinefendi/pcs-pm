@@ -99,7 +99,7 @@ class PasswordManager:
                         print(f"\nFailed after {max_attempts_confirm} attempts. Password not saved.")
                         return
                     continue
-           
+            
             try:
                 encrypted = self.encrypt_password(password)
                 self.cursor.execute("INSERT INTO passwords (service, password) VALUES (?, ?)", (service_name, encrypted))
@@ -131,6 +131,21 @@ class PasswordManager:
         except Exception as e:
             print(f"Error retrieving password: {e}")
             return None
+
+    def delete_password(self, service_name):
+        """Delete a password for a service"""
+        try:
+            self.cursor.execute("DELETE FROM passwords WHERE service = ?", (service_name,))
+            self.conn.commit()
+            if self.cursor.rowcount > 0:
+                print(f"Password for {service_name} deleted successfully")
+                return True
+            else:
+                print(f"No password found for {service_name}")
+                return False
+        except Exception as e:
+            print(f"Error deleting password: {e}")
+            return False
     
     def close(self):
         """Close the database connection"""
@@ -144,9 +159,10 @@ def main():
         print("\n=== Password Manager ===")
         print("1. Add password")
         print("2. Get password")
-        print("3. Exit")
+        print("3. Delete password")
+        print("4. Exit")
         
-        choice = input("\nEnter choice (1-3): ").strip()
+        choice = input("\nEnter choice (1-4): ").strip()
         
         if choice == '1':
             print("Password should be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character")
@@ -156,6 +172,9 @@ def main():
             service_name = input("Enter service name (e.g., gmail.com): ")
             pm.get_password(service_name)
         elif choice == '3':
+            service_name = input("Enter service name (e.g., gmail.com): ")
+            pm.delete_password(service_name)
+        elif choice == '4':
             print("Goodbye!")
             pm.close()
             break

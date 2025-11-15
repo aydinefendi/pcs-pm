@@ -19,7 +19,7 @@ class TestPasswordManager(unittest.TestCase):
         if os.path.exists(self.test_key):
             os.remove(self.test_key)
         os.rmdir(self.temp_dir)
-  
+ 
     def test_password_validation_valid(self):
         valid_password = "MyPass123!"
         is_valid, errors = self.pm.validate_password(valid_password)
@@ -114,6 +114,33 @@ class TestPasswordManager(unittest.TestCase):
         
         retrieved = self.pm.get_password(service)
         self.assertEqual(password, retrieved)
+    
+    def test_delete_password(self):
+        """Test password deletion"""
+        service = "gmail.com"
+        password = "MyGmail123!"
+        
+        encrypted = self.pm.encrypt_password(password)
+        self.pm.cursor.execute("INSERT INTO passwords (service, password) VALUES (?, ?)", (service, encrypted))
+        self.pm.conn.commit()
+        
+        retrieved = self.pm.get_password(service)
+        self.assertEqual(password, retrieved)
+        
+        result = self.pm.delete_password(service)
+        self.assertTrue(result, "delete_password should return True on successful deletion")
+        
+        retrieved_after = self.pm.get_password(service)
+        self.assertIsNone(retrieved_after, "Password should not exist after deletion")
+        
+        self.pm.cursor.execute("SELECT COUNT(*) FROM passwords WHERE service = ?", (service,))
+        count = self.pm.cursor.fetchone()[0]
+        self.assertEqual(count, 0, "Database should have 0 entries for deleted service")
+    
+    def test_delete_nonexistent_password(self):
+        """Test deleting a password that doesn't exist"""
+        result = self.pm.delete_password("example.com")
+        self.assertFalse(result, "delete_password should return False for non existent service")
     
     def test_duplicate_service_prevention(self):
         service = "facebook.com"
